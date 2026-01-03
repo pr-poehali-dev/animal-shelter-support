@@ -1,10 +1,36 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Icon from "@/components/ui/icon";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [expandedStory, setExpandedStory] = useState<number | null>(null);
+  const [donationAmount, setDonationAmount] = useState<string>("500");
+  const [customAmount, setCustomAmount] = useState<string>("");
+  const [donationType, setDonationType] = useState<string>("once");
+  const [donationOpen, setDonationOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleDonation = () => {
+    const amount = donationAmount === "custom" ? customAmount : donationAmount;
+    toast({
+      title: "Спасибо за вашу доброту! 💚",
+      description: `Ваше пожертвование ${amount} ₽ поможет спасти животных`,
+    });
+    setDonationOpen(false);
+  };
+
+  const predefinedAmounts = [
+    { value: "300", label: "300 ₽", description: "Корм на день" },
+    { value: "500", label: "500 ₽", description: "Прививка" },
+    { value: "1000", label: "1000 ₽", description: "Лечение" },
+    { value: "3000", label: "3000 ₽", description: "Операция" },
+  ];
 
   const animals = [
     {
@@ -94,10 +120,85 @@ const Index = () => {
             <a href="#help" className="text-foreground hover:text-primary transition-colors">Помощь</a>
             <a href="#contacts" className="text-foreground hover:text-primary transition-colors">Контакты</a>
           </nav>
-          <Button size="lg">
-            <Icon name="Heart" size={18} className="mr-2" />
-            Помочь сейчас
-          </Button>
+          <Dialog open={donationOpen} onOpenChange={setDonationOpen}>
+            <DialogTrigger asChild>
+              <Button size="lg">
+                <Icon name="Heart" size={18} className="mr-2" />
+                Помочь сейчас
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-2xl">
+                  <Icon name="Heart" size={24} className="text-primary" />
+                  Поддержать приют
+                </DialogTitle>
+                <DialogDescription>
+                  Ваша помощь спасает жизни животных
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6 py-4">
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Выберите сумму</Label>
+                  <RadioGroup value={donationAmount} onValueChange={setDonationAmount} className="grid grid-cols-2 gap-3">
+                    {predefinedAmounts.map((amount) => (
+                      <div key={amount.value}>
+                        <RadioGroupItem value={amount.value} id={amount.value} className="peer sr-only" />
+                        <Label
+                          htmlFor={amount.value}
+                          className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                        >
+                          <span className="text-lg font-bold">{amount.label}</span>
+                          <span className="text-xs text-muted-foreground">{amount.description}</span>
+                        </Label>
+                      </div>
+                    ))}
+                    <div className="col-span-2">
+                      <RadioGroupItem value="custom" id="custom" className="peer sr-only" />
+                      <Label
+                        htmlFor="custom"
+                        className="flex items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                      >
+                        <span className="font-semibold">Другая сумма</span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                  {donationAmount === "custom" && (
+                    <div className="animate-accordion-down">
+                      <Input
+                        type="number"
+                        placeholder="Введите сумму"
+                        value={customAmount}
+                        onChange={(e) => setCustomAmount(e.target.value)}
+                        className="text-lg"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Тип помощи</Label>
+                  <RadioGroup value={donationType} onValueChange={setDonationType} className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="once" id="once" />
+                      <Label htmlFor="once" className="cursor-pointer">Разовое пожертвование</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="monthly" id="monthly" />
+                      <Label htmlFor="monthly" className="cursor-pointer">Ежемесячная поддержка</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                <Button 
+                  onClick={handleDonation} 
+                  className="w-full text-lg py-6"
+                  disabled={donationAmount === "custom" && !customAmount}
+                >
+                  <Icon name="Heart" size={20} className="mr-2" />
+                  Помочь {donationAmount === "custom" ? customAmount : donationAmount} ₽
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </header>
 
@@ -118,10 +219,14 @@ const Index = () => {
               <Icon name="Heart" size={20} className="mr-2" />
               Взять питомца
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-              <Icon name="HandHeart" size={20} className="mr-2" />
-              Поддержать приют
-            </Button>
+            <Dialog open={donationOpen} onOpenChange={setDonationOpen}>
+              <DialogTrigger asChild>
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+                  <Icon name="HandHeart" size={20} className="mr-2" />
+                  Поддержать приют
+                </Button>
+              </DialogTrigger>
+            </Dialog>
           </div>
           <div className="mt-12 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
             <div className="text-center">
@@ -277,10 +382,14 @@ const Index = () => {
                 <p className="text-muted-foreground mb-6">
                   Ваша поддержка помогает нам спасать жизни и дарить животным второй шанс
                 </p>
-                <Button size="lg" className="text-lg px-8">
-                  <Icon name="HandHeart" size={20} className="mr-2" />
-                  Поддержать приют
-                </Button>
+                <Dialog open={donationOpen} onOpenChange={setDonationOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="lg" className="text-lg px-8">
+                      <Icon name="HandHeart" size={20} className="mr-2" />
+                      Поддержать приют
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
               </CardContent>
             </Card>
           </div>

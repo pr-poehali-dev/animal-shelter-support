@@ -7,8 +7,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Icon from "@/components/ui/icon";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [expandedStory, setExpandedStory] = useState<number | null>(null);
   const [donationAmount, setDonationAmount] = useState<string>("500");
   const [customAmount, setCustomAmount] = useState<string>("");
@@ -215,7 +217,10 @@ const Index = () => {
             Мы помогаем бездомным животным найти свою семью и начать новую жизнь, полную тепла и заботы
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-lg px-8 py-6">
+            <Button size="lg" className="text-lg px-8 py-6" onClick={() => {
+              const element = document.getElementById('animals');
+              element?.scrollIntoView({ behavior: 'smooth' });
+            }}>
               <Icon name="Heart" size={20} className="mr-2" />
               Взять питомца
             </Button>
@@ -277,7 +282,7 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">{animal.description}</p>
-                  <Button className="w-full">
+                  <Button className="w-full" onClick={() => navigate(`/animal/${animal.id}`)}>
                     <Icon name="Home" size={18} className="mr-2" />
                     Познакомиться
                   </Button>
